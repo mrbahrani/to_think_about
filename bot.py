@@ -9,11 +9,11 @@ from thought import Thought
 from thoughtservice import ThoughtService
 
 
-token = "5001962644:AAF-gpjO3CfE-pAHHCRMXH0hCWjkXPuW-Qg"
+token = open("token_file", 'r').read()
 updater = Updater(token=token, use_context=True)
 dispatcher = updater.dispatcher
 id_str = open("working_id", "r").read()
-ali_id = int(id_str[:len(id_str)-1])
+ali_id = int(id_str)
 print(ali_id)
 thought_service = ThoughtService()
 
@@ -21,6 +21,18 @@ thought_service = ThoughtService()
 def show(update: Update, context: CallbackContext) -> None:
     if update.effective_user.id == ali_id:
         thoughts = thought_service.get_thoughts_of_the_day(date.today())
+        msg_body = ""
+        for thought in thoughts:
+            msg_body += "{}-{}\n".format(thought.id, thought.name)
+        if msg_body == "":
+            update.message.reply_text("No thought to show")
+            return
+        update.message.reply_text(msg_body)
+
+
+def review(update: Update, context: CallbackContext) -> None:
+    if update.effective_user.id == ali_id:
+        thoughts = thought_service.review_all()
         msg_body = ""
         for thought in thoughts:
             msg_body += "{}-{}\n".format(thought.id, thought.name)
@@ -75,6 +87,7 @@ dispatcher.add_handler(CommandHandler("start", start))
 dispatcher.add_handler(CommandHandler("add", add))
 dispatcher.add_handler(CommandHandler("y", yes_handler))
 dispatcher.add_handler(CommandHandler("show", show))
+dispatcher.add_handler(CommandHandler("review", review))
 dispatcher.add_handler(MessageHandler(Filters.text & ~Filters.command, msg_handler))
 
 updater.start_polling()

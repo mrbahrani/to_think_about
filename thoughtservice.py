@@ -44,6 +44,10 @@ class ThoughtService:
         t.deleted = 1
         self.session.commit()
 
+    def review_all(self):
+        return self.session.query(Thought).filter(Thought.deleted == 0).all()
+
+
 if __name__ == "__main__":
     ts = ThoughtService()
     th = Thought(id=2, name="ass2", date_to_alarm=date.today())
